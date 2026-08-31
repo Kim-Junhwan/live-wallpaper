@@ -7,10 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		34DAA0EB3045CE7D0038BD72 /* AppConstant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34DAA0EA3045CE7D0038BD72 /* AppConstant.swift */; };
 		DC1F964A2E1CC55500817874 /* AVKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DC1F96492E1CC55500817874 /* AVKit.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		34DAA0EA3045CE7D0038BD72 /* AppConstant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConstant.swift; sourceTree = "<group>"; };
 		DC1F96492E1CC55500817874 /* AVKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVKit.framework; path = System/Library/Frameworks/AVKit.framework; sourceTree = SDKROOT; };
 		DC716A912D6B515A00AD7AE3 /* LiveWallpaper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = LiveWallpaper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -46,6 +48,7 @@
 		DC716A882D6B515A00AD7AE3 = {
 			isa = PBXGroup;
 			children = (
+				34DAA0EA3045CE7D0038BD72 /* AppConstant.swift */,
 				DC716A932D6B515A00AD7AE3 /* LiveWallpaper */,
 				DC10A8ED2D709B5D00FD1199 /* Frameworks */,
 				DC716A922D6B515A00AD7AE3 /* Products */,
@@ -136,6 +139,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				34DAA0EB3045CE7D0038BD72 /* AppConstant.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

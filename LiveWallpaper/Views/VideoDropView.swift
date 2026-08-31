@@ -83,7 +83,7 @@ struct VideoDropView: View {
     
     private func selectVideoFile() {
         let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.mpeg4Movie, .quickTimeMovie]
+        panel.allowedContentTypes = AppConstant.supportMediaType
         panel.allowsMultipleSelection = false
         panel.canChooseFiles = true
         panel.canChooseDirectories = false
@@ -97,6 +97,8 @@ struct VideoDropView: View {
 struct DropZoneView: View {
     var onDrop: (URL) -> Void
     var onSelect: () -> Void
+    
+    
     
     var body: some View {
         RoundedRectangle(cornerRadius: 10)
@@ -114,27 +116,29 @@ struct DropZoneView: View {
                 }
             )
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .contentShape(Rectangle())
             .onTapGesture {
                 onSelect()
             }
-            .onDrop(of: [UTType.mpeg4Movie, UTType.quickTimeMovie], isTargeted: nil) { providers in
-                for provider in providers {
-                    // Check if the dropped file conforms to the MP4 type
-                    if provider.hasItemConformingToTypeIdentifier(UTType.movie.identifier) {
-                        provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: nil) { (item, error) in
-                            DispatchQueue.main.async {
-                                if let url = item as? URL {
-                                    onDrop(url)
-                                }
-                            }
+            .onDrop(of: AppConstant.supportMediaType, isTargeted: nil) { providers in
+                guard let provider = providers.first(where: isSupportMediaType) else {
+                    return false  // Reject non-MP4 files
+                }
+                provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: nil) { (item, error) in
+                    DispatchQueue.main.async {
+                        if let url = item as? URL {
+                            onDrop(url)
                         }
-                        return true  // Accept the drop
                     }
                 }
-                return false  // Reject non-MP4 files
+                return true  // Accept the drop
             }
     }
-    
+
+    private func isSupportMediaType(_ item: NSItemProvider) -> Bool {
+        return AppConstant.supportMediaType.contains { item.hasItemConformingToTypeIdentifier($0.identifier) }
+    }
+
 }
 
 struct VideoDropView_Previews: PreviewProvider {
