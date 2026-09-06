@@ -14,41 +14,38 @@ struct ContentView: View {
     let recent = Recent()
     let ambientSounds = AmbientSounds()
     
+    @ViewBuilder
     var selectedView: some View {
-        if selectedItem == .recent {
-            AnyView(recent)
-        } else if selectedItem == .localVideo {
-            AnyView(VideoDropView())
+        if selectedItem == .localVideo {
+            VideoDropView()
+        } else if selectedItem == .recent {
+            recent
         } else if selectedItem == .ambientMixer {
-            AnyView(ambientSounds)
+            ambientSounds
         } else {
-            AnyView(SettingView())
+            SettingView()
         }
     }
     
     var body: some View {
         
-        ZStack {
-            VStack {
-                NavigationView {
-                    List(NavItem.allCases, id: \.self) { item in
-                        NavigationLink(destination: selectedView, tag: item, selection: $selectedItem) {
-                            HStack {
-                                Text(item.rawValue)
-                                Spacer()
-                            }
-                        }
-                        .listRowSeparator(.hidden)
+        NavigationView {
+            List(NavItem.allCases, id: \.self) { item in
+                NavigationLink(destination: selectedView, tag: item, selection: $selectedItem) {
+                    HStack {
+                        Text(item.rawValue)
+                        Spacer()
                     }
-                    .padding(.top, 0)
-                    .frame(minWidth: 200)
                 }
-                .toolbar {
-                    ToolbarItem(placement: .navigation) {
-                        Button(action: toggleSidebar) {
-                            Image(systemName: "sidebar.left")
-                        }
-                    }
+                .listRowSeparator(.hidden)
+            }
+            .padding(.top, 0)
+            .frame(minWidth: 200)
+        }
+        .toolbar {
+            ToolbarItem(placement: .navigation) {
+                Button(action: toggleSidebar) {
+                    Image(systemName: "sidebar.left")
                 }
             }
         }

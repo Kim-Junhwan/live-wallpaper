@@ -13,12 +13,6 @@ struct LiveWallpaperApp: App {
     
     
     var body: some Scene {
-//        Window("Wallpaper",id: "MainWindow") {
-//            ContentView()
-//        }
-//        .defaultSize(width:900, height:500)
-//        .windowResizability(.contentMinSize) // Respect min frame size
-        
         MenuBarExtra("Menu", systemImage: "shippingbox.fill") {
             MenuBarView()
         }
@@ -29,7 +23,6 @@ struct LiveWallpaperApp: App {
         DispatchQueue.main.async {
             if !UserSetting.shared.doNotShowWindow {
                 WindowManager.showWindow()
-                
             }
         }
     }
@@ -97,15 +90,4 @@ struct MenuBarView: View {
         
         
     }
-    
-//    private func openMainWindow() {
-//        if let window = NSApp.windows.first(where: { $0.identifier?.rawValue == "MainWindow" }) {
-//            window.makeKeyAndOrderFront(nil)
-//            NSApp.activate(ignoringOtherApps: true)
-//        } else {
-//            openWindow(id: "MainWindow")
-//            NSApp.activate(ignoringOtherApps: true)
-//        }
-//        
-//    }
 }
