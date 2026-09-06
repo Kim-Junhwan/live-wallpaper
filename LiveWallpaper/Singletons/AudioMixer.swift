@@ -7,7 +7,7 @@
 import AVFoundation
 
 class AudioMixer {
-    static let shared = AudioMixer()
+    nonisolated(unsafe) static let shared = AudioMixer()
     private var players: [String: AVAudioPlayer] = [:]  // Dictionary to store players by filename
     
     func process(mixerEnabled: Bool, sounds: [Sound]){

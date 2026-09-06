@@ -72,7 +72,7 @@ struct Sound: Codable {
     var volume: Float
 }
 
-class UserSetting: ObservableObject {
+class UserSetting: ObservableObject, @unchecked Sendable {
     static let shared = UserSetting()
     
     @Published var video:Video = Video(id: "", url: "", type: .pixabay, thumbnail: "")

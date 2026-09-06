@@ -2,7 +2,7 @@ import Cocoa
 import SwiftUI
 import AVKit
 
-class WallpaperManager: ObservableObject {
+class WallpaperManager: ObservableObject, @unchecked Sendable {
     static let shared = WallpaperManager()
     
     private var window: NSWindow?

@@ -125,10 +125,8 @@ struct DropZoneView: View {
                     return false  // Reject non-MP4 files
                 }
                 provider.loadItem(forTypeIdentifier: UTType.movie.identifier, options: nil) { (item, error) in
-                    DispatchQueue.main.async {
-                        if let url = item as? URL {
-                            onDrop(url)
-                        }
+                    if let url = item as? URL {
+                        onDrop(url)
                     }
                 }
                 return true  // Accept the drop
