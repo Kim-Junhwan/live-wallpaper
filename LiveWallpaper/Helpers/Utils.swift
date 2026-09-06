@@ -197,7 +197,7 @@ func generateThumbnailAndSave(from videoPath: String, fileName: String) async ->
         let targetTimeSeconds = durationSeconds < 3.0 ? durationSeconds / 2.0 : durationSeconds / 3.0
         let targetTime = CMTime(seconds: max(0, targetTimeSeconds), preferredTimescale: 600)
         
-        let cgImage = try imageGenerator.copyCGImage(at: targetTime, actualTime: nil)
+        let cgImage = try await imageGenerator.image(at: targetTime).image
         let thumbnail = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
         
         guard let imageData = thumbnail.tiffRepresentation,

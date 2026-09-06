@@ -4,47 +4,56 @@ import CoreImage.CIFilterBuiltins
 
 
 func analyzeVideoCharacteristics(url: URL, sampleCount: Int = 8) async -> VideoAttrs? {
-    let asset = AVAsset(url: url)
+    let asset = AVURLAsset(url: url)
     
     do {
         let duration = try await asset.load(.duration)
-        guard duration.seconds > 0.5 else { return nil }
+        guard sampleCount > 0,
+              duration.seconds.isFinite,
+              duration.seconds > 0.5 else { return nil }
         
         let imageGenerator = AVAssetImageGenerator(asset: asset)
+        let tolerance = CMTime(seconds: 0.1, preferredTimescale: 600)
+        
         imageGenerator.appliesPreferredTrackTransform = true
-        
-        // Key optimizations:
-        imageGenerator.requestedTimeToleranceBefore = .positiveInfinity  // Use keyframes
-        imageGenerator.requestedTimeToleranceAfter = .positiveInfinity   // Use keyframes
-        imageGenerator.maximumSize = CGSize(width: 320, height: 320)     // Reduced resolution
-        
+
+        // Keep generated frames near the requested sample times while allowing a
+        // small tolerance for faster extraction.
+        imageGenerator.requestedTimeToleranceBefore = tolerance
+        imageGenerator.requestedTimeToleranceAfter = tolerance
+        imageGenerator.maximumSize = CGSize(width: 320, height: 320)
+
+        // CIContext maintains internal caches, so reuse one context for all samples.
+        let context = CIContext(options: [.useSoftwareRenderer: false])
+
         var brightnessSum = 0.0
         var saturationSum = 0.0
         var warmthSum = 0.0
         var validSamples = 0
-        
-        // Avoid first and last 5%
+
         let startCutoff = duration.seconds * 0.05
         let endCutoff = duration.seconds * 0.95
         let effectiveDuration = endCutoff - startCutoff
-        
-        for i in 0..<sampleCount {
-            // Distribute samples evenly in the middle 90%
-            let seconds = startCutoff + (effectiveDuration * (Double(i) + 0.5) / Double(sampleCount))
-            let time = CMTime(seconds: seconds, preferredTimescale: 600)
-            
-            do {
-                // Capture at keyframe with reduced resolution
-                let cgImage = try imageGenerator.copyCGImage(at: time, actualTime: nil)
+        let sampleInterval = effectiveDuration / Double(sampleCount)
+
+        let sampleTimes = (0..<sampleCount).map { index in
+            let seconds = startCutoff + sampleInterval * (Double(index) + 0.5)
+            return CMTime(seconds: seconds, preferredTimescale: 600)
+        }
+
+        let images = imageGenerator.images(for: sampleTimes)
+
+        for await result in images {
+            switch result {
+            case .success(_, let cgImage, _):
                 let ciImage = CIImage(cgImage: cgImage)
                 let extent = ciImage.extent
-                
+
                 guard let filter = CIFilter(name: "CIAreaAverage", parameters: [
                     kCIInputImageKey: ciImage,
                     kCIInputExtentKey: CIVector(cgRect: extent)
                 ]), let output = filter.outputImage else { continue }
-                
-                let context = CIContext(options: [.useSoftwareRenderer: false])
+
                 var pixel = [UInt8](repeating: 0, count: 4)
                 context.render(
                     output,
@@ -72,11 +81,15 @@ func analyzeVideoCharacteristics(url: URL, sampleCount: Int = 8) async -> VideoA
                 saturationSum += saturation
                 warmthSum += warmth
                 validSamples += 1
-            } catch {
-                print("Frame capture error: \(error.localizedDescription)")
+
+            case .failure(let requestedTime, let error):
+                print(
+                    "Frame capture error at \(requestedTime.seconds)s: "
+                    + error.localizedDescription
+                )
             }
         }
-        
+
         guard validSamples > 0 else { return nil }
         return VideoAttrs(
             brightness: brightnessSum / Double(validSamples),
