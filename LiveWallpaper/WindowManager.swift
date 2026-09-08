@@ -1,7 +1,7 @@
 import Cocoa
 import SwiftUI
 
-class WindowManager: NSWindowController {
+class WindowManager: NSWindowController, NSWindowDelegate {
     static var shared: WindowManager?
     
     convenience init() {
@@ -14,14 +14,8 @@ class WindowManager: NSWindowController {
         )
         window.contentView = contentView
         self.init(window: window)
-        
-        // Center the window on first appearance
+        window.delegate = self
         window.center()
-        
-        // Detect when the window is closed and reset shared instance
-        NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: .main) { _ in
-            WindowManager.shared = nil
-        }
     }
     
     static func showWindow() {
@@ -32,5 +26,9 @@ class WindowManager: NSWindowController {
             shared?.window?.makeKeyAndOrderFront(nil)
         }
         NSApp.activate(ignoringOtherApps: true)
+    }
+    
+    func windowWillClose(_ notification: Notification) {
+        Self.shared = nil
     }
 }
