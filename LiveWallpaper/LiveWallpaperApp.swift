@@ -19,6 +19,11 @@ struct LiveWallpaperApp: App {
     }
     
     init() {
+#if DEBUG
+        if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+            return
+        }
+#endif
         runOnLaunch()
         DispatchQueue.main.async {
             if !UserSetting.shared.doNotShowWindow {
