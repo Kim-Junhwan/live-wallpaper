@@ -9,53 +9,54 @@ enum NavItem: String, CaseIterable {
 }
 
 struct ContentView: View {
-    @State var selectedItem:NavItem? = .recent
+    @State private var selectedItem: NavItem = .recent
+    @State private var sideBarVisible: NavigationSplitViewVisibility = .all
     
     let recent = Recent()
     let ambientSounds = AmbientSounds()
     
-    @ViewBuilder
-    var selectedView: some View {
-        if selectedItem == .localVideo {
-            VideoDropView()
-        } else if selectedItem == .recent {
-            recent
-        } else if selectedItem == .ambientMixer {
-            ambientSounds
-        } else {
-            SettingView()
-        }
-    }
-    
     var body: some View {
-        
-        NavigationView {
-            List(NavItem.allCases, id: \.self) { item in
-                NavigationLink(destination: selectedView, tag: item, selection: $selectedItem) {
-                    HStack {
-                        Text(item.rawValue)
-                        Spacer()
-                    }
+        NavigationSplitView(columnVisibility: $sideBarVisible) {
+            List(selection: $selectedItem) {
+                ForEach(NavItem.allCases, id: \.self) { item in
+                    Text(item.rawValue)
+                        .tag(item)
                 }
-                .listRowSeparator(.hidden)
             }
-            .padding(.top, 0)
-            .frame(minWidth: 200)
+            .toolbar(removing: .sidebarToggle)
+            .navigationSplitViewColumnWidth(min: 200, ideal: 220)
+        } detail: {
+            selectedView
         }
         .toolbar {
             ToolbarItem(placement: .navigation) {
-                Button(action: toggleSidebar) {
+                Button {
+                    toggleSidebar()
+                } label: {
                     Image(systemName: "sidebar.left")
                 }
             }
         }
-        
     }
     
-   
+    @ViewBuilder
+    var selectedView: some View {
+        switch selectedItem {
+        case .localVideo:
+            VideoDropView()
+        case .recent:
+            recent
+        case .ambientMixer:
+            ambientSounds
+        case .settings:
+            SettingView()
+        }
+    }
     
     private func toggleSidebar() {
-        NSApp.keyWindow?.firstResponder?.tryToPerform(#selector(NSSplitViewController.toggleSidebar(_:)), with: nil)
+        withAnimation {
+            sideBarVisible = sideBarVisible == .detailOnly ? .all : .detailOnly
+        }
     }
 }
 
