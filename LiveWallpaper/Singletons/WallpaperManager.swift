@@ -104,6 +104,7 @@ class WallpaperManager: ObservableObject, @unchecked Sendable {
         let wrapper = NSView(frame: screen.frame)
         wrapper.wantsLayer = true
         wrapper.autoresizingMask = [.width, .height]
+        
         newWindow.contentView = wrapper
 
         self.window = newWindow
@@ -138,9 +139,8 @@ class WallpaperManager: ObservableObject, @unchecked Sendable {
         player = AVQueuePlayer()
         looper = AVPlayerLooper(player: player!, templateItem: playerItem)
         
-        let playerView = PlayerLayerView(player: player!, video: video)
-        let hostView = NSHostingView(rootView: playerView)
-        animateContentViewTransition(newContentView: hostView)
+        let playerView = CustomPlayerView(player: player!, video: video)
+        animateContentViewTransition(newContentView: playerView)
         
         player!.play()
     }
