@@ -49,10 +49,10 @@ func analyzeVideoCharacteristics(url: URL, sampleCount: Int = 8) async -> VideoA
                 let ciImage = CIImage(cgImage: cgImage)
                 let extent = ciImage.extent
 
-                guard let filter = CIFilter(name: "CIAreaAverage", parameters: [
-                    kCIInputImageKey: ciImage,
-                    kCIInputExtentKey: CIVector(cgRect: extent)
-                ]), let output = filter.outputImage else { continue }
+                let filter = CIFilter.areaAverage()
+                filter.inputImage = ciImage
+                filter.extent = extent
+                guard let output = filter.outputImage else { return nil }
 
                 var pixel = [UInt8](repeating: 0, count: 4)
                 context.render(
