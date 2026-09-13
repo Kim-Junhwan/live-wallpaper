@@ -4,7 +4,7 @@ import AVKit
 struct VideoDropView: View {
     @State private var videoURL: URL?
     @State private var player: AVPlayer?
-    @State var video:Video?
+    @State var video:WallpaperAsset?
     @State private var showToast = false
     
     var body: some View {
@@ -42,7 +42,6 @@ struct VideoDropView: View {
                 Toast(systemImage: "checkmark.circle.fill", message: "Wallpaper Set", isVisible: $showToast)
             }
         }
-        .navigationTitle("Add your local video")
         .frame(minWidth: 500, minHeight: 400)
         
     }
@@ -66,14 +65,9 @@ struct VideoDropView: View {
         Task {
             do {
                 let copiedFileURL = try await copyFile(fileURL: url, targetFilename: id)
-
-                guard let thumbnailPath = await generateThumbnailAndSave(from: copiedFileURL.path, fileName: "\(id).png") else {return}
-                
-                video = Video(id: id, url: copiedFileURL.path, type: .local, thumbnail: thumbnailPath)
-                
-                let attrs = await analyzeVideoCharacteristics(url: url)
-                video?.attrs = attrs
-                
+                guard let thumbnailPath = await generateThumbnailAndSave(from: copiedFileURL.path(percentEncoded: false), fileName: "\(id).png") else {return}
+                let attrs = await analyzeVideoCharacteristics(url: url) ?? .default
+                video = WallpaperAsset(id: id, url: copiedFileURL.path(percentEncoded: false), type: .video(attrs), thumbnail: thumbnailPath, createdAt: Date())
             } catch {
                 print("Error copying file: \(error)")
             }

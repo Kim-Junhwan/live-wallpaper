@@ -13,10 +13,11 @@ class CustomPlayerView: NSView {
     private var darkLayer = CALayer()
     
     let player:AVPlayer
-    let video:Video
+    let video:WallpaperAsset
     
 
-    init(player: AVPlayer, video: Video) {
+    init(player: AVPlayer, video: WallpaperAsset) {
+        guard case let .video(videoAttr) = video.type else { fatalError("Player MetaData Must VideoMetaData") }
         self.player = player
         self.video = video
         super.init(frame: .zero)
@@ -29,9 +30,7 @@ class CustomPlayerView: NSView {
 
         layer?.addSublayer(playerLayer)
         
-        print(video.attrs)
-        
-        darkLayer = createAdaptiveDarkModeOverlay(rect: playerLayer.bounds, characteristics: video.attrs)
+        darkLayer = createAdaptiveDarkModeOverlay(rect: playerLayer.bounds, characteristics: videoAttr)
         playerLayer.addSublayer(darkLayer)
 
         updateOverlay()
@@ -86,7 +85,7 @@ class CustomPlayerView: NSView {
 
 struct PlayerLayerView: NSViewRepresentable {
     let player: AVPlayer
-    let video: Video
+    let video: WallpaperAsset
 
     func makeNSView(context: Context) -> NSView {
         return CustomPlayerView(player: player, video: video)

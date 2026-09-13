@@ -27,7 +27,7 @@ struct ThumbnailImage: View {
 }
 
 struct RecentVideoView: View {
-    let video:Video
+    let video:WallpaperAsset
     
     @State private var isHovered = false
     @State private var hoverTask: DispatchWorkItem?
@@ -85,7 +85,7 @@ struct RecentVideoView: View {
         }
     }
     
-    private func confirmAndDeleteVideo(_ video: Video) {
+    private func confirmAndDeleteVideo(_ video: WallpaperAsset) {
         let alert = NSAlert()
         alert.messageText = "Remove Wallpaper"
         alert.informativeText = "Removing this wallpaper won't delete your original video file. Your original video will remain intact."
@@ -100,13 +100,8 @@ struct RecentVideoView: View {
                 // try resetDirectory(at: path)
                 if video == UserSetting.shared.video {
                     WallpaperManager.shared.destroy()
-                    
-                    let empty = Video(id: "", url: "", type: .pixabay, thumbnail: "")
-                    UserSetting.shared.video = empty
-                    
-                    if let encoded = try? JSONEncoder().encode(empty) {
-                        UserDefaults.standard.set(encoded, forKey: "video")
-                    }
+                    UserSetting.shared.video = nil
+                    UserDefaults.standard.removeObject(forKey: "video")
                 }
                 
                 UserSetting.shared.deleteVideo(video)

@@ -6,63 +6,38 @@
 
 import Foundation
 
+struct WallpaperAsset: Codable, Equatable, Hashable {
+    let id:String
+    let url:String
+    let type:MediaContent
+    let thumbnail:String
+    let createdAt: Date
 
-extension VideoAttrs {
+    enum CodingKeys: String, CodingKey {
+        case id, url, type, thumbnail, createdAt
+    }
+}
+
+struct ImageMetaData: Codable, Hashable {
+
+}
+
+struct VideoMetaData: Codable, Hashable {
+    let brightness: Double
+    let saturation: Double
+    let warmth: Double
+
+    static let `default` = VideoMetaData(brightness: 0.2, saturation: 0.5, warmth: 0.0)
+
     var unpacked: (Double, Double, Double) {
         (brightness, saturation, warmth)
     }
 }
 
-struct VideoAttrs: Codable, Equatable, Hashable {
-    let brightness: Double
-    let saturation: Double
-    let warmth: Double
-    
-    static let `default` = VideoAttrs(brightness: 0.2, saturation: 0.5, warmth: 0.0)
-}
 
-struct Video: Codable, Equatable, Hashable {
-    let id:String
-    let url:String
-    let type:VideoType
-    let thumbnail:String
-    var attrs: VideoAttrs?
-    
-    enum CodingKeys: String, CodingKey {
-        case id, url, type, thumbnail, attrs
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        
-        // Decode all properties normally except bindLocalhost
-        id = try container.decode(String.self, forKey: .id)
-        url = try container.decode(String.self, forKey: .url)
-        type = try container.decode(VideoType.self, forKey: .type)
-        thumbnail = try container.decode(String.self, forKey: .thumbnail)
-        
-        attrs = try container.decodeIfPresent(VideoAttrs.self, forKey: .attrs)
-    }
-    
-    init(
-        id: String,
-        url: String,
-        type: VideoType,
-        thumbnail: String,
-        attrs: VideoAttrs? = nil
-    ) {
-        self.id = id
-        self.url = url
-        self.type = type
-        self.thumbnail = thumbnail
-        self.attrs = attrs
-    }
-}
-
-enum VideoType: String, Codable {
-    case pixabay
-    case local
-    case youtube
+enum MediaContent: Codable, Hashable {
+    case image(ImageMetaData)
+    case video(VideoMetaData)
 }
 
 
@@ -75,8 +50,8 @@ struct Sound: Codable {
 class UserSetting: ObservableObject, @unchecked Sendable {
     static let shared = UserSetting()
     
-    @Published var video:Video = Video(id: "", url: "", type: .pixabay, thumbnail: "")
-    @Published var recent:[Video] = []
+    @Published var video:WallpaperAsset?
+    @Published var recent:[WallpaperAsset] = []
     
     @Published var mixerEnabled = false {
         didSet {
@@ -146,32 +121,9 @@ class UserSetting: ObservableObject, @unchecked Sendable {
         self.pauseOnFocusLoss = defaults.bool(forKey: "pauseOnFocusLoss")
 
         self.adaptiveMode = defaults.bool(forKey: "adaptiveMode")
-        
-        migrate()
-    }
-
-    func migrate(){
-        //some migration for dark mode
-        DispatchQueue.global(qos: .background).async {
-            Task {
-                for index in self.recent.indices {
-                    if self.recent[index].attrs == nil {
-                        let attrs = await analyzeVideoCharacteristics(url: URL(fileURLWithPath: self.recent[index].url))
-                        
-                        DispatchQueue.main.async {
-                            self.recent[index].attrs = attrs
-                        }
-                    }
-                }
-                
-                if let encoded = try? JSONEncoder().encode(self.recent) {
-                    self.defaults.set(encoded, forKey: "recent")
-                }
-            }
-        }
     }
     
-    func setVideo(_ video: Video) {
+    func setVideo(_ video: WallpaperAsset) {
         if let encoded = try? JSONEncoder().encode(video) {
             defaults.set(encoded, forKey: "video")
             self.video = video
@@ -187,7 +139,7 @@ class UserSetting: ObservableObject, @unchecked Sendable {
         }
     }
     
-    func deleteVideo(_ video: Video){
+    func deleteVideo(_ video: WallpaperAsset){
         recent.removeAll {$0.id == video.id}
         if let encoded = try? JSONEncoder().encode(recent) {
             defaults.set(encoded, forKey: "recent")
@@ -202,7 +154,7 @@ class UserSetting: ObservableObject, @unchecked Sendable {
     }
     
     func resetVideoAndRecent(){
-        video = Video(id: "", url: "", type: .pixabay, thumbnail: "")
+        video = nil
         recent = []
         if let encoded = try? JSONEncoder().encode(video) {
             defaults.set(encoded, forKey: "video")
@@ -212,17 +164,17 @@ class UserSetting: ObservableObject, @unchecked Sendable {
         }
     }
     
-    func getVideo() -> Video {
+    func getVideo() -> WallpaperAsset? {
         if let savedData = defaults.data(forKey: "video"),
-           let video = try? JSONDecoder().decode(Video.self, from: savedData) {
+           let video = try? JSONDecoder().decode(WallpaperAsset.self, from: savedData) {
             return video
         }
-        return Video(id: "", url: "", type: .pixabay, thumbnail: "")
+        return nil
     }
     
-    func getRecent() -> [Video] {
+    func getRecent() -> [WallpaperAsset] {
         if let savedData = defaults.data(forKey: "recent"),
-           let videos = try? JSONDecoder().decode([Video].self, from: savedData) {
+           let videos = try? JSONDecoder().decode([WallpaperAsset].self, from: savedData) {
             return videos
         }
         return []

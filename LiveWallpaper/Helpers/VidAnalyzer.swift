@@ -3,7 +3,7 @@ import CoreImage
 import CoreImage.CIFilterBuiltins
 
 
-func analyzeVideoCharacteristics(url: URL, sampleCount: Int = 8) async -> VideoAttrs? {
+func analyzeVideoCharacteristics(url: URL, sampleCount: Int = 8) async -> VideoMetaData? {
     let asset = AVURLAsset(url: url)
     
     do {
@@ -11,7 +11,7 @@ func analyzeVideoCharacteristics(url: URL, sampleCount: Int = 8) async -> VideoA
         guard sampleCount > 0,
               duration.seconds.isFinite,
               duration.seconds > 0.5 else { return nil }
-        
+
         let imageGenerator = AVAssetImageGenerator(asset: asset)
         let tolerance = CMTime(seconds: 0.1, preferredTimescale: 600)
         
@@ -91,19 +91,19 @@ func analyzeVideoCharacteristics(url: URL, sampleCount: Int = 8) async -> VideoA
         }
 
         guard validSamples > 0 else { return nil }
-        return VideoAttrs(
+
+        return VideoMetaData(
             brightness: brightnessSum / Double(validSamples),
             saturation: saturationSum / Double(validSamples),
-            warmth: warmthSum / Double(validSamples)
-        )
+            warmth: warmthSum / Double(validSamples))
     } catch {
         print("Duration load error: \(error.localizedDescription)")
         return nil
     }
 }
 
-func createAdaptiveDarkModeOverlay(rect: CGRect, characteristics: VideoAttrs? = nil) -> CALayer {
-    let attrs = characteristics ?? VideoAttrs.default
+func createAdaptiveDarkModeOverlay(rect: CGRect, characteristics: VideoMetaData? = nil) -> CALayer {
+    let attrs = characteristics ?? VideoMetaData.default
     let brightness = attrs.brightness
     let saturation = attrs.saturation
     let warmth = attrs.warmth

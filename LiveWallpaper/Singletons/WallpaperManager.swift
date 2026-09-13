@@ -111,7 +111,7 @@ class WallpaperManager: ObservableObject, @unchecked Sendable {
     }
     
     /// Sets or updates the wallpaper video URL
-    func setWallpaperVideo(video: Video) {
+    func setWallpaperVideo(video: WallpaperAsset) {
         guard let url = constructURL(from: video.url) else {return}
         
         if !isValidMovieFile(at: url){
@@ -323,8 +323,8 @@ class WallpaperManager: ObservableObject, @unchecked Sendable {
             ? true: false
         }()
         
-        if showDarkLayer {
-            imageView.layer?.addSublayer(createAdaptiveDarkModeOverlay(rect: rootView.bounds, characteristics: UserSetting.shared.video.attrs))
+        if showDarkLayer, case .video(let attr) = UserSetting.shared.video?.type {
+            imageView.layer?.addSublayer(createAdaptiveDarkModeOverlay(rect: rootView.bounds, characteristics:attr))
         }
         // Add to root view
         rootView.addSubview(imageView, positioned: .above, relativeTo: nil)

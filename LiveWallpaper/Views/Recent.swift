@@ -41,17 +41,20 @@ struct Recent: View {
             } else {
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 20) {
-                        ForEach(userSetting.recent.reversed(), id: \.self.id) { video in
+                        let selectedVideoID = userSetting.video?.id
+
+                        ForEach(userSetting.recent.reversed(), id: \.id) { video in
+                            let isSelected = video.id == selectedVideoID
+                            let borderColor: Color = isSelected ? .accentColor : .clear
+
                             RecentVideoView(video: video)
-                                .overlay(
+                                .overlay {
                                     RoundedRectangle(cornerRadius: 8)
-                                        .stroke(String(video.id) == userSetting.video.id ? Color.accentColor : Color.clear, lineWidth: 4)
-                                )
+                                        .stroke(borderColor, lineWidth: 4)
+                                }
                                 .onTapGesture {
-                                    print(video)
                                     WallpaperManager.shared.setWallpaperVideo(video: video)
-                                    UserSetting.shared.setVideo(video)
-                                    
+                                    userSetting.setVideo(video)
                                 }
                         }
                     }
