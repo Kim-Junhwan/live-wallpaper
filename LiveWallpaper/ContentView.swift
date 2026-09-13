@@ -2,14 +2,14 @@ import SwiftUI
 import AVKit
 
 enum NavItem: String, CaseIterable {
-    case localVideo = "Add Video"
+    case addAsset = "Add Wallpaper"
     case recent = "Recents"
     case ambientMixer = "Ambient Sounds"
     case settings = "Settings"
 }
 
 struct ContentView: View {
-    @State private var selectedItem: NavItem = .recent
+    @State private var selectedItem: NavItem = .addAsset
     @State private var sideBarVisible: NavigationSplitViewVisibility = .all
     
     let recent = Recent()
@@ -42,8 +42,8 @@ struct ContentView: View {
     @ViewBuilder
     var selectedView: some View {
         switch selectedItem {
-        case .localVideo:
-            VideoDropView()
+        case .addAsset:
+            AssetDropView()
         case .recent:
             recent
         case .ambientMixer:

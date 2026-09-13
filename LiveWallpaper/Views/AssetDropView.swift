@@ -1,7 +1,7 @@
 import SwiftUI
 import AVKit
 
-struct VideoDropView: View {
+struct AssetDropView: View {
     @State private var videoURL: URL?
     @State private var player: AVPlayer?
     @State var video:WallpaperAsset?
@@ -133,8 +133,8 @@ struct DropZoneView: View {
 
 }
 
-struct VideoDropView_Previews: PreviewProvider {
+struct AssetDropView_Previews: PreviewProvider {
     static var previews: some View {
-        VideoDropView(video: nil)
+        AssetDropView(video: nil)
     }
 }
